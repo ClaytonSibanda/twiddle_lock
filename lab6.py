@@ -53,21 +53,33 @@ def get_time():
 def delay():
    sleep(0.5)
 
+def isDecreasing(curr,prev):
+    return curr>prev
+
+def isIncreasing(curr,prev):
+    return curr<prev
+
+pot_values=[]
+pattern=[]
+currDirection=''
 while True:
 	#temp_output = analog_input(0) # Reading from CH1
 	#temp       = convert_temp(temp_output)
 	pot_output= analog_input(1)#reads from channel 1 from the pot
 	pot_volts = convert_volts(pot_output)#gets potentiometer voltages
         print(pot_output)
-        
+        start_time=0;
         if(GPIO.input(start_button)==0):
             print("start pressed")
+            start_time=time.time()
             delay()
+    
+
 
         pattern =['L',2.3,'L',4]
         if is_unlocked(pattern):
                 print("unlocked")
         else:
             print("wrong password try again")
-	sleep(0.5)
+        pot_values.append(pot_output)
 GPIO.cleanup() # release pins from this operation
