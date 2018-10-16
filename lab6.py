@@ -54,7 +54,7 @@ def convert_volts(data):
 def get_time():
 	return strftime("%H:%M:%S")
 def delay():
-   sleep(0.5)
+   sleep(1)
 
 def getDirection(curr,prev):
     if curr>prev:
@@ -64,10 +64,21 @@ def getDirection(curr,prev):
     else:
         return "No change"
 
+
+
+
+
 pot_values=[]
-pattern=[] 
+pattern=[]
+directions=[]
 direction=''
 start =False
+
+
+def populate_pattern(symbol):
+    pattern.append(symbol)
+
+    
 def read_pot_adc():
     global direction
     while True:
@@ -76,17 +87,18 @@ def read_pot_adc():
             pot_values.append(pot_output)
         if len(pot_values)>1:
             direction = getDirection(pot_values[len(pot_values)-1],pot_values[len(pot_values)-2])
+            directions.append(direction)
 
-        print("direction is: ",direction,pot_values[len(pot_values)-3:])
+        print("direction is: ",directions[len(directions)-5:],direction,pot_values[len(pot_values)-3:])
         delay()
 
 
 
-
+#thread monitoring the of the potentiometer
 try:
     start_new_thread(read_pot_adc,())
 except:
-    print("Error thread error")
+    print("Error adc thread error")
 
 while True:
 	#temp_output = analog_input(0) # Reading from CH1
