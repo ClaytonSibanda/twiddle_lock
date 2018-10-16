@@ -44,15 +44,7 @@ def analog_input(channel):
 	data = ((adc[1]&3) << 8) + adc[2]
 	return data
 
-# Below function will convert data to voltage
-def convert_volts(data):
-	volts = (data * 3.3) / float(1023)
-	volts = round(volts, 2) # Round off to 2 decimal places
-	return volts
 
-
-def get_time():
-	return strftime("%H:%M:%S")
 def delay():
    sleep(1)
 
@@ -89,9 +81,17 @@ def read_pot_adc():
             direction = getDirection(pot_values[len(pot_values)-1],pot_values[len(pot_values)-2])
             directions.append(direction)
 
-        print("direction is: ",directions[len(directions)-5:],direction,pot_values[len(pot_values)-3:])
+        print("direction is: ",directions[len(directions)-3:],direction,pot_values[len(pot_values)-3:])
         delay()
 
+
+
+
+def get_first_symbol(dirs):
+    for symbol in dirs:
+        if(symbol) != 'No change':
+            populate_pattern(symbol)
+            break
 
 
 #thread monitoring the of the potentiometer
@@ -100,26 +100,46 @@ try:
 except:
     print("Error adc thread error")
 
-while True:
-	#temp_output = analog_input(0) # Reading from CH1
-	#temp       = convert_temp(temp_output)
-    #pot_output= analog_input(1)#reads from channel 1 from the pot
-#	pot_volts = convert_volts(pot_output)#gets potentiometer voltages
-    #print(pot_output)
-    start_time=0
-    if(GPIO.input(start_button)==0):
-        print("start pressed")
-        start_time=time()
-        start =True
-        delay()    
+start_time=0
 
-
-    pattern1 =['L',2.3,'L',4]
+   
+pattern1 =['L',2.3,'L',4]
+if len(pattern)>3:
     if is_unlocked(pattern1):
         print("unlocked")
     else:
         print("wrong password try again")
-    delay()
+
+isPaused = False
+
+def get_pause_status():
+    global isPaused
+    while True:
+        if len(directions)>4 and directions[len(directions)-1]=="No change":
+            isPaused = True
+        else:
+            isPaused = False
+
+#thread for monitoring no change symbol 
+try:
+    start_new_thread(get_pause_status,())
+except:
+    print("Error thread2 error")
+
+
+while len(pattern)!=4:
+    if(GPIO.input(start_button)==0):
+        print("start pressed")
+        start_time=time()
+        start =True
+        delay()
+
+    if len(pattern)==0 and len(directions)>3:
+        get_first_symbol(directions)
+    
+
+    print("pattern: {0},isPaused: {1}".format(pattern,isPaused))    
+    delay() 
 GPIO.cleanup() # release pins from this operation
 
 #if __name__ == "__main__":
