@@ -137,6 +137,9 @@ while len(pattern)!=4:
     if len(pattern)==0 and len(directions)>3:
         get_first_symbol(directions)
     
+    if isPaused and len(pattern)==1:
+        pattern.append(time()-start_time)
+        start_time =time()-1
 
     print("pattern: {0},isPaused: {1}".format(pattern,isPaused))    
     delay() 
