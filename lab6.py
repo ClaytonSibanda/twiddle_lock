@@ -3,6 +3,9 @@
 # Importing modules
 import spidev # To communicate with SPI devices
 from time import sleep,strftime, time  # To add delay and display time
+from thread import start_new_thread
+
+
 # Start SPI connection
 spi = spidev.SpiDev() # Created an object
 spi.open(0,0) 
@@ -61,33 +64,44 @@ def getDirection(curr,prev):
     else:
         return "No change"
 
-
-def isIncreasing(curr,prev):
-    return curr<prev
-
 pot_values=[]
-pattern=[]
+pattern=[] 
 direction=''
 start =False
+def read_pot_adc():
+    global direction
+    while True:
+        pot_output= analog_input(1)#reads from channel 1 from the pot
+        if start:
+            pot_values.append(pot_output)
+        if len(pot_values)>1:
+            direction = getDirection(pot_values[len(pot_values)-1],pot_values[len(pot_values)-2])
+
+        print("direction is: ",direction,pot_values[len(pot_values)-3:])
+        delay()
+
+
+
+
+try:
+    start_new_thread(read_pot_adc,())
+except:
+    print("Error thread error")
+
 while True:
 	#temp_output = analog_input(0) # Reading from CH1
 	#temp       = convert_temp(temp_output)
-    pot_output= analog_input(1)#reads from channel 1 from the pot
+    #pot_output= analog_input(1)#reads from channel 1 from the pot
 #	pot_volts = convert_volts(pot_output)#gets potentiometer voltages
-    print(pot_output)
+    #print(pot_output)
     start_time=0
     if(GPIO.input(start_button)==0):
         print("start pressed")
         start_time=time()
         start =True
-        delay()
-    if start:
-            pot_values.append(pot_output)
+        delay()    
 
-    if len(pot_values)>1:
-        direction = getDirection(pot_values[len(pot_values)-1],pot_values[len(pot_values)-2])
 
-    print("direction is: ",direction,pot_values)
     pattern1 =['L',2.3,'L',4]
     if is_unlocked(pattern1):
         print("unlocked")
@@ -95,3 +109,8 @@ while True:
         print("wrong password try again")
     delay()
 GPIO.cleanup() # release pins from this operation
+
+#if __name__ == "__main__":
+    #run main here
+
+
