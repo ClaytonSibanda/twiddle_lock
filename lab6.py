@@ -2,7 +2,7 @@
 #!/usr/bin/python
 # Importing modules
 import spidev # To communicate with SPI devices
-from time import sleep,strftime  # To add delay and display time
+from time import sleep,strftime, time  # To add delay and display time
 # Start SPI connection
 spi = spidev.SpiDev() # Created an object
 spi.open(0,0) 
@@ -53,33 +53,45 @@ def get_time():
 def delay():
    sleep(0.5)
 
-def isDecreasing(curr,prev):
-    return curr>prev
+def getDirection(curr,prev):
+    if curr>prev:
+        return 'R'
+    elif curr<prev:
+        return 'L'
+    else:
+        return "No change"
+
 
 def isIncreasing(curr,prev):
     return curr<prev
 
 pot_values=[]
 pattern=[]
-currDirection=''
+direction=''
+start =False
 while True:
 	#temp_output = analog_input(0) # Reading from CH1
 	#temp       = convert_temp(temp_output)
-	pot_output= analog_input(1)#reads from channel 1 from the pot
-	pot_volts = convert_volts(pot_output)#gets potentiometer voltages
-        print(pot_output)
-        start_time=0;
-        if(GPIO.input(start_button)==0):
-            print("start pressed")
-            start_time=time.time()
-            delay()
-    
+    pot_output= analog_input(1)#reads from channel 1 from the pot
+#	pot_volts = convert_volts(pot_output)#gets potentiometer voltages
+    print(pot_output)
+    start_time=0
+    if(GPIO.input(start_button)==0):
+        print("start pressed")
+        start_time=time()
+        start =True
+        delay()
+    if start:
+            pot_values.append(pot_output)
 
+    if len(pot_values)>1:
+        direction = getDirection(pot_values[len(pot_values)-1],pot_values[len(pot_values)-2])
 
-        pattern =['L',2.3,'L',4]
-        if is_unlocked(pattern):
-                print("unlocked")
-        else:
-            print("wrong password try again")
-        pot_values.append(pot_output)
+    print("direction is: ",direction,pot_values)
+    pattern1 =['L',2.3,'L',4]
+    if is_unlocked(pattern1):
+        print("unlocked")
+    else:
+        print("wrong password try again")
+    delay()
 GPIO.cleanup() # release pins from this operation
