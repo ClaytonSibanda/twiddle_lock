@@ -25,7 +25,7 @@ GPIO.setup(start_button,GPIO.IN,pull_up_down=GPIO.PUD_UP)
 
 
 isLocked = True
-password= ['L',2,'R',4]
+password= ['L',10,'R',15]
 
 def is_unlocked(pattern):
     for i in range(len(pattern)):
@@ -46,8 +46,8 @@ def analog_input(channel):
 	return data
 
 #delay function
-def delay():
-   sleep(1)
+def delay(seconds):
+   sleep(seconds)
 
 def getDirection(curr,prev):
     if curr>prev:
@@ -84,8 +84,9 @@ def read_pot_adc():
             if len(pot_values)>1:
                 direction = getDirection(pot_values[len(pot_values)-1],pot_values[len(pot_values)-2])
                 directions.append(direction)
-                print("directions: {},direction: {}, pot_values: {} ".format(directions[len(directions)-3:],direction,pot_values[len(pot_values)-3:]))
-            delay()
+                #print("directions: {},direction: {}, pot_values: {} ".format(directions[len(directions)-3:],direction,pot_values[len(pot_values)-3:]))
+                
+            delay(0.5)
 
 
 
@@ -99,16 +100,12 @@ def get_first_symbol(dirs):
 
 
 start_time=0
-
+isPaused = False
    
 pattern1 =['L',2.3,'L',4]
-if len(pattern)>3:
-    if is_unlocked(pattern1):
-        print("unlocked")
-    else:
-        print("wrong password try again")
 
-isPaused = False
+
+
 
 def get_pause_status():
     global isPaused
@@ -145,7 +142,7 @@ while len(pattern)!=4:
             start_time=time()
             start_helper_threads()
         start =True
-        
+        delay(1)
     
     if  len(pattern)==0 and len(directions)>3:
         get_first_symbol(directions)
@@ -160,15 +157,14 @@ while len(pattern)!=4:
 
     print("pattern:{}, isPaused: {}".format(pattern,isPaused))
         
-    delay()
-
+    
 #check if the safe has been unlocked and give feedback to the user
 if is_unlocked(pattern):
     print("YaaaY!!!!!!!!!!!!!!!!! you unlocked the safe you won $1000000")
 else:
     print("wrong password please try again")
 
-
+sleep(1)
 
 
 GPIO.cleanup() # release pins from this operation
