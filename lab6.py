@@ -10,8 +10,9 @@ from thread import start_new_thread
 spi = spidev.SpiDev() # Created an object
 spi.open(0,0) 
 spi.max_speed_hz=1000000
-#setup gpio
 
+
+#setup gpio
 import RPi.GPIO as GPIO
     
 GPIO.setmode(GPIO.BOARD)
@@ -44,7 +45,7 @@ def analog_input(channel):
 	data = ((adc[1]&3) << 8) + adc[2]
 	return data
 
-
+#delay function
 def delay():
    sleep(1)
 
@@ -81,7 +82,7 @@ def read_pot_adc():
             direction = getDirection(pot_values[len(pot_values)-1],pot_values[len(pot_values)-2])
             directions.append(direction)
 
-        print("direction is: ",directions[len(directions)-3:],direction,pot_values[len(pot_values)-3:])
+        print("directions: {},direction: {}, pot_values: {} ".format(directions[len(directions)-3:],direction,pot_values[len(pot_values)-3:]))
         delay()
 
 
@@ -94,7 +95,7 @@ def get_first_symbol(dirs):
             break
 
 
-#thread monitoring the of the potentiometer
+#thread monitoring the reaing of the of the potentiometer
 try:
     start_new_thread(read_pot_adc,())
 except:
@@ -132,7 +133,6 @@ while len(pattern)!=4:
         print("start pressed")
         start_time=time()
         start =True
-        delay()
 
     if len(pattern)==0 and len(directions)>3:
         get_first_symbol(directions)
@@ -140,9 +140,24 @@ while len(pattern)!=4:
     if isPaused and len(pattern)==1:
         pattern.append(time()-start_time)
         start_time =time()-1
+    if (not isPaused) and len(pattern)==2:
+        pattern.append(directions[len(directions)-1])
+    if isPaused and len(pattern)==3:
+        pattern.append(time()-start_time)
 
-    print("pattern: {0},isPaused: {1}".format(pattern,isPaused))    
-    delay() 
+    print("pattern:{}, isPaused: {}".format(pattern,isPaused))
+        
+    delay()
+
+#check if the safe has been unlocked and give feedback to the user
+if is_unlocked(pattern):
+    print("YaaaY!!!!!!!!!!!!!!!!! you unlocked the safe you won $1000000")
+else:
+    print("wrong password please try again")
+
+
+
+
 GPIO.cleanup() # release pins from this operation
 
 #if __name__ == "__main__":
