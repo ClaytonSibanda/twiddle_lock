@@ -60,7 +60,8 @@ def getDirection(curr,prev):
 
 
 
-
+u_line =True
+l_line = False
 pot_values=[]
 pattern=[]
 directions=[]
@@ -75,15 +76,16 @@ def populate_pattern(symbol):
 def read_pot_adc():
     global direction
     while True:
-        pot_output= analog_input(1)#reads from channel 1 from the pot
         if start:
+            pot_output= analog_input(1)#reads from channel 1 from the pot
             pot_values.append(pot_output)
-        if len(pot_values)>1:
-            direction = getDirection(pot_values[len(pot_values)-1],pot_values[len(pot_values)-2])
-            directions.append(direction)
 
-        print("directions: {},direction: {}, pot_values: {} ".format(directions[len(directions)-3:],direction,pot_values[len(pot_values)-3:]))
-        delay()
+            
+            if len(pot_values)>1:
+                direction = getDirection(pot_values[len(pot_values)-1],pot_values[len(pot_values)-2])
+                directions.append(direction)
+                print("directions: {},direction: {}, pot_values: {} ".format(directions[len(directions)-3:],direction,pot_values[len(pot_values)-3:]))
+            delay()
 
 
 
@@ -95,11 +97,6 @@ def get_first_symbol(dirs):
             break
 
 
-#thread monitoring the reaing of the of the potentiometer
-try:
-    start_new_thread(read_pot_adc,())
-except:
-    print("Error adc thread error")
 
 start_time=0
 
@@ -121,20 +118,36 @@ def get_pause_status():
         else:
             isPaused = False
 
-#thread for monitoring no change symbol 
-try:
-    start_new_thread(get_pause_status,())
-except:
-    print("Error thread2 error")
+
+def start_helper_threads():
+    #thread for monitoring no change symbol 
+    try:
+        start_new_thread(get_pause_status,())
+    except:
+        print("Error thread2 error")
+    #thread monitoring the reading of the of the potentiometer
+    try:
+        start_new_thread(read_pot_adc,())
+    except:
+        print("Error adc thread error")
 
 
 while len(pattern)!=4:
     if(GPIO.input(start_button)==0):
-        print("start pressed")
-        start_time=time()
+        if start:
+            #reset the list
+            directions[:]=[]
+            pot_values[:]=[]
+            pattern[:]=[]
+            
+        else:
+            print("start pressed")
+            start_time=time()
+            start_helper_threads()
         start =True
-
-    if len(pattern)==0 and len(directions)>3:
+        
+    
+    if  len(pattern)==0 and len(directions)>3:
         get_first_symbol(directions)
     
     if isPaused and len(pattern)==1:
