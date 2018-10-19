@@ -170,16 +170,15 @@ while len(pattern)!=4:
         
     
         #check if the safe has been unlocked and give feedback to the user
-if is_correct(pattern):
-    if is_unlock:
-        print("YaaaY!!!!!!!!!!!!!!!!! you unlocked the safe you won $1000000")
-       
-    else:
-        print("YaaaaY!!!!!!!!!!!!! you locked the safe")
-
-else:
-    print("wrong password please try again")
-is_unlock=!is_unlock
+    if(len(pattern)==4):
+        if is_correct(pattern):
+            if is_unlock:
+                print("YaaaY!!!!!!!!!!!!!!!!! you unlocked the safe you won $1000000")
+            else:
+                print("YaaaaY!!!!!!!!!!!!! you locked the safe")
+        else:
+            print("wrong password please try again")
+        is_unlock=!is_unlock
 
 
 GPIO.cleanup() # release pins from this operation
