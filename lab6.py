@@ -30,8 +30,10 @@ GPIO.setup(start_button,GPIO.IN,pull_up_down=GPIO.PUD_UP)
 def power_on_led(unlock):
     if(unlock):
         GPIO.output(unlocked_led,GPIO.HIGH)
+        GPIO.output(locked_led,GPIO.LOW)
     else:
         GPIO.output(locked_led,GPIO.HIGH)
+        GPIO.output(unlocked_led,GPIO.LOW)
 
 password= ['L',10,'R',10]#combopassword
 tol_set = set([8,10,11,9,12])
@@ -116,36 +118,32 @@ is_unlock = True #default value
 
 def get_pause_status():
     global isPaused
-    while True:
-        if len(directions)>4 and directions[len(directions)-1]=="No change":
-            isPaused = True
-        else:
-            isPaused = False
-        if len(pattern)>3:
-                break
+    if len(directions)>4 and directions[len(directions)-1]=="No change":
+        isPaused = True
+    else:
+        isPaused = False
+    
 
 def blink_led(is_unlock):
     #blink LED code here
     print("blink LEDs here")
 
 def start_helper_threads():
-    #thread for monitoring no change symbol 
-    try:
-        start_new_thread(get_pause_status,())
-    except:
-        print("Error thread2 error")
+
     #thread monitoring the reading of the of the potentiometer
     try:
         start_new_thread(read_pot_adc,())
     except:
         print("Error adc thread error")
 
-def clear_lists():
+def reset():
     directions[:]=[]
     pot_values[:]=[]
     pattern[:]=[]
+    start=True
 
 while True:
+    get_pause_status()
     power_on_led(is_unlock)
     #print(is_unlock)
     #if(is_unlock):
@@ -156,7 +154,7 @@ while True:
 
     if(GPIO.input(start_button)==0):
         if start:
-            clear_lists()#reset the list
+            reset()#reset the list
                 
         else:
             print("start pressed")
@@ -172,27 +170,33 @@ while True:
     
     if isPaused and len(pattern)==1:
         pattern.append(time()-start_time)
-        sleep(2)#allow the user to start turning another direction after 2 seconds
+        sleep(1)#allow the user to start turning another direction after 2 seconds
         start_time =time()
     if (not isPaused) and len(pattern)==2:
         pattern.append(directions[len(directions)-1])
     if isPaused and len(pattern)==3:
         pattern.append(time()-start_time)
-    print("pattern:{}, isPaused: {}".format(pattern,isPaused))
+    if start:
+        print("pattern:{}, isPaused: {}".format(pattern,isPaused))
         
     
         #check if the safe has been unlocked and give feedback to the user
     if(len(pattern)==4):
+        start = False
         if is_correct(pattern):
             if is_unlock:
                 print("YaaaY!!!!!!!!!!!!!!!!! you unlocked the safe you won $1000000")
             else:
+       
                 print("YaaaaY!!!!!!!!!!!!! you locked the safe")
+            is_unlock= not is_unlock
+
         else:
             print("wrong password please try again")
-        is_unlock= not is_unlock
-        break
-
+        print("press S button to continue")
+        while(GPIO.input(start_button)!=0):
+            reset()
+            delay(2)
 
 GPIO.cleanup() # release pins from this operation
 sleep(1)#allow all the threads to finish
