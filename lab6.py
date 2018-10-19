@@ -178,7 +178,7 @@ while True:
     if isPaused and len(pattern)==3:
         pattern.append(time()-start_time)
     if start:
-        print("pattern:{}, isPaused: {}".format(pattern,isPaused))
+        print("pattern:{}".format(pattern))
         
     
         #check if the safe has been unlocked and give feedback to the user
@@ -186,10 +186,10 @@ while True:
         start = False
         if is_correct(pattern):
             if is_unlock:
-                print("YaaaY!!!!!!!!!!!!!!!!! you unlocked the safe you won $1000000")
+                print("Unlock successful")
             else:
        
-                print("YaaaaY!!!!!!!!!!!!! you locked the safe")
+                print("Lock Successful")
             is_unlock= not is_unlock
             power_on_led(is_unlock)
 
