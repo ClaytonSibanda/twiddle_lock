@@ -17,15 +17,21 @@ import RPi.GPIO as GPIO
     
 GPIO.setmode(GPIO.BOARD)
 start_button=40
-stop_button=38
-frequency_button =37
-display_button=36
+unlocked_led=38
+locked_led=36
 
+
+
+GPIO.setup(unlocked_led,GPIO.OUT)
+GPIO.setup(locked_led,GPIO.OUT)
 GPIO.setup(start_button,GPIO.IN,pull_up_down=GPIO.PUD_UP)
 
+GPIO.output(unlocked_led,GPIO.HIGH)
+GPIO.output(locked_led,GPIO.HIGH)
 
 isLocked = True
-password= ['L',10,'R',15]
+password= ['L',10,'R',10]#combopassword
+tol_set = set([8,10,11,9,12])
 
 def is_unlocked(pattern):
     for i in range(len(pattern)):
@@ -33,7 +39,7 @@ def is_unlocked(pattern):
             if pattern[i]!=password[i]:
                 return False
         if(i==1 or i==3):
-            if round(pattern[i])!=password[i]:
+            if round(pattern[i]) not in tol_set:
                 return False
     return True
             
@@ -102,7 +108,7 @@ def get_first_symbol(dirs):
 start_time=0
 isPaused = False
    
-pattern1 =['L',2.3,'L',4]
+
 
 
 
@@ -114,6 +120,8 @@ def get_pause_status():
             isPaused = True
         else:
             isPaused = False
+        if len(pattern)>3:
+                break
 
 
 def start_helper_threads():
@@ -139,22 +147,23 @@ while len(pattern)!=4:
             
         else:
             print("start pressed")
+            #delay(2)# pause for 2 seconds after pressing start i.e S  button
             start_time=time()
             start_helper_threads()
+            delay(2)
         start =True
-        delay(1)
-    
-    if  len(pattern)==0 and len(directions)>3:
+           
+    if  len(pattern)==0 and len(directions)>1:
         get_first_symbol(directions)
     
     if isPaused and len(pattern)==1:
         pattern.append(time()-start_time)
-        start_time =time()-1
+        sleep(2)#allow the user to start turning another direction after 2 seconds
+        start_time =time()
     if (not isPaused) and len(pattern)==2:
         pattern.append(directions[len(directions)-1])
     if isPaused and len(pattern)==3:
         pattern.append(time()-start_time)
-
     print("pattern:{}, isPaused: {}".format(pattern,isPaused))
         
     
