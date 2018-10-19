@@ -26,10 +26,13 @@ GPIO.setup(unlocked_led,GPIO.OUT)
 GPIO.setup(locked_led,GPIO.OUT)
 GPIO.setup(start_button,GPIO.IN,pull_up_down=GPIO.PUD_UP)
 
-GPIO.output(unlocked_led,GPIO.HIGH)
-GPIO.output(locked_led,GPIO.HIGH)
 
-isLocked = True
+def power_on_led(unlock):
+    if(unlock):
+        GPIO.output(unlocked_led,GPIO.HIGH)
+    else:
+        GPIO.output(locked_led,GPIO.HIGH)
+
 password= ['L',10,'R',10]#combopassword
 tol_set = set([8,10,11,9,12])
 
@@ -65,9 +68,6 @@ def getDirection(curr,prev):
 
 
 
-
-u_line =True
-l_line = False
 pot_values=[]
 pattern=[]
 directions=[]
@@ -124,6 +124,9 @@ def get_pause_status():
         if len(pattern)>3:
                 break
 
+def blink_led(is_unlock):
+    #blink LED code here
+    print("blink LEDs here")
 
 def start_helper_threads():
     #thread for monitoring no change symbol 
@@ -137,15 +140,24 @@ def start_helper_threads():
     except:
         print("Error adc thread error")
 
+def clear_lists():
+    directions[:]=[]
+    pot_values[:]=[]
+    pattern[:]=[]
 
-while len(pattern)!=4:
+while True:
+    power_on_led(is_unlock)
+    #print(is_unlock)
+    #if(is_unlock):
+     #   GPIO.output(unlocked_led,GPIO.HIGH)
+   # else:
+    #    GPIO.output(locked_led,GPIO.HIGH)
+
+
     if(GPIO.input(start_button)==0):
         if start:
-            #reset the list
-            directions[:]=[]
-            pot_values[:]=[]
-            pattern[:]=[]
-            
+            clear_lists()#reset the list
+                
         else:
             print("start pressed")
             #delay(2)# pause for 2 seconds after pressing start i.e S  button
@@ -178,7 +190,8 @@ while len(pattern)!=4:
                 print("YaaaaY!!!!!!!!!!!!! you locked the safe")
         else:
             print("wrong password please try again")
-        is_unlock=!is_unlock
+        is_unlock= not is_unlock
+        break
 
 
 GPIO.cleanup() # release pins from this operation
