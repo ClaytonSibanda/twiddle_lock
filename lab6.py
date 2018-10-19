@@ -33,7 +33,7 @@ isLocked = True
 password= ['L',10,'R',10]#combopassword
 tol_set = set([8,10,11,9,12])
 
-def is_unlocked(pattern):
+def is_correct(pattern):
     for i in range(len(pattern)):
         if  i==0 or i==2:
             if pattern[i]!=password[i]:
@@ -107,6 +107,7 @@ def get_first_symbol(dirs):
 
 start_time=0
 isPaused = False
+is_unlock = True #default value
    
 
 
@@ -148,9 +149,10 @@ while len(pattern)!=4:
         else:
             print("start pressed")
             #delay(2)# pause for 2 seconds after pressing start i.e S  button
-            start_time=time()
             start_helper_threads()
             delay(2)
+            start_time=time()
+
         start =True
            
     if  len(pattern)==0 and len(directions)>1:
@@ -167,16 +169,22 @@ while len(pattern)!=4:
     print("pattern:{}, isPaused: {}".format(pattern,isPaused))
         
     
-#check if the safe has been unlocked and give feedback to the user
-if is_unlocked(pattern):
-    print("YaaaY!!!!!!!!!!!!!!!!! you unlocked the safe you won $1000000")
+        #check if the safe has been unlocked and give feedback to the user
+if is_correct(pattern):
+    if is_unlock:
+        print("YaaaY!!!!!!!!!!!!!!!!! you unlocked the safe you won $1000000")
+       
+    else:
+        print("YaaaaY!!!!!!!!!!!!! you locked the safe")
+
 else:
     print("wrong password please try again")
-
-sleep(1)
+is_unlock=!is_unlock
 
 
 GPIO.cleanup() # release pins from this operation
+sleep(1)#allow all the threads to finish
+
 
 #if __name__ == "__main__":
     #run main here
