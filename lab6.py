@@ -137,15 +137,16 @@ def start_helper_threads():
         print("Error adc thread error")
 
 def reset():
+    global start
     directions[:]=[]
     pot_values[:]=[]
     pattern[:]=[]
     start=True
+   # print(start)
 
 while True:
     get_pause_status()
-    power_on_led(is_unlock)
-    #print(is_unlock)
+      #print(is_unlock)
     #if(is_unlock):
      #   GPIO.output(unlocked_led,GPIO.HIGH)
    # else:
@@ -190,13 +191,18 @@ while True:
        
                 print("YaaaaY!!!!!!!!!!!!! you locked the safe")
             is_unlock= not is_unlock
+            power_on_led(is_unlock)
+
 
         else:
             print("wrong password please try again")
         print("press S button to continue")
         while(GPIO.input(start_button)!=0):
-            reset()
-            delay(2)
+            pass
+        reset()
+        print("system reset")
+        delay(2)
+        start_time=time()
 
 GPIO.cleanup() # release pins from this operation
 sleep(1)#allow all the threads to finish
