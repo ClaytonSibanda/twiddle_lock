@@ -19,12 +19,15 @@ GPIO.setmode(GPIO.BOARD)
 start_button=40
 unlocked_led=38
 locked_led=36
+mode_button= 32
 
 
 
 GPIO.setup(unlocked_led,GPIO.OUT)
 GPIO.setup(locked_led,GPIO.OUT)
 GPIO.setup(start_button,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+GPIO.setup(mode_button,GPIO.IN,pull_up_down=GPIO.PUD_UP)
+
 
 
 def power_on_led(unlock):
@@ -38,11 +41,13 @@ def power_on_led(unlock):
 password= ['L',10,'R',10]#combopassword
 tol_set = set([8,10,11,9,12])
 
+is_secure =True
 def is_correct(pattern):
     for i in range(len(pattern)):
-        if  i==0 or i==2:
-            if pattern[i]!=password[i]:
-                return False
+        if is_secure:
+            if  i==0 or i==2:
+                if pattern[i]!=password[i]:
+                    return False
         if(i==1 or i==3):
             if round(pattern[i]) not in tol_set:
                 return False
@@ -146,6 +151,8 @@ def reset():
 
 while True:
     get_pause_status()
+    power_on_led(is_unlock)
+
       #print(is_unlock)
     #if(is_unlock):
      #   GPIO.output(unlocked_led,GPIO.HIGH)
@@ -194,15 +201,23 @@ while True:
             power_on_led(is_unlock)
 
 
+
         else:
             print("wrong password please try again")
-        print("press S button to continue")
+        print("press S button to continue and press mode button if you want to change to toggle modes")
         while(GPIO.input(start_button)!=0):
+            if(GPIO.input(mode_button)==0):
+                print("mode changed")
+                is_secure =False
+
             pass
         reset()
+        print(is_secure)
         print("system reset")
+        #print("press mode button to change to unsecure mode")
         delay(2)
         start_time=time()
+
 
 GPIO.cleanup() # release pins from this operation
 sleep(1)#allow all the threads to finish
